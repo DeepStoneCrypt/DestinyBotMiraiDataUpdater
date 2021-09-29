@@ -10,9 +10,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -28,14 +28,19 @@ import static cn.taskeren.code.dbmu.Utils.writeToTemp;
 public class Updater {
 
 	public static final Logger log = LogManager.getLogger("Updater");
+	public static final String CONFIG_PATH = "./config.json";
 
+	// Configuration
 	public static String mongoUrl = "mongodb://localhost:27017";
+	public static boolean useProxy = true;
 
 	private static MongoClient db;
 	private static JsonElement manifest;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		System.out.println("Whoosh!");
+
+		readConfiguration();
 
 		log.info("正在配置更新环境");
 		initialSetup();
@@ -50,15 +55,25 @@ public class Updater {
 		executeUpdate();
 
 		log.info("完成！");
+	}
 
-		if(System.console() != null) {
-			System.console().readLine("按任意键退出 $ ");
+	static void readConfiguration() throws IOException {
+		var configFile = new File(CONFIG_PATH);
+
+		if(configFile.exists()) {
+			log.info("正在读取配置文档");
+			var config = JsonParser.parseReader(new FileReader(configFile)).getAsJsonObject();
+
+			mongoUrl = config.getAsJsonPrimitive("mongoDatabaseUrl").getAsString();
+			useProxy = config.getAsJsonPrimitive("useSystemProxy").getAsBoolean();
+		} else {
+			log.info("未指定配置文档，可在 jar 里找到模板，复制并放置在同目录下");
 		}
 	}
 
 	static void initialSetup() {
-		System.setProperty("java.net.useSystemProxies", "true");
-		log.info("启用系统代理设置：\t{}", System.getProperty("java.net.useSystemProxies"));
+		System.setProperty("java.net.useSystemProxies", Boolean.toString(useProxy));
+		log.info("启用系统代理：\t{}", System.getProperty("java.net.useSystemProxies"));
 
 		log.info("数据库地址：\t{}", mongoUrl);
 	}

@@ -1,0 +1,6 @@
+{
+  "_comment_useSystemProxy": "是否使用系统代理来加速数据获取速度",
+  "useSystemProxy": true,
+  "_comment_mongoDatabaseUrl": "数据库地址",
+  "mongoDatabaseUrl": "mongodb://localhost:27017"
+}
