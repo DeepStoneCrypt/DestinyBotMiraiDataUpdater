@@ -1,0 +1,9 @@
+# IDEA
+/.idea
+
+# Maven
+/target
+
+# Running, Debugging and Testing
+latest.log
+/debug
